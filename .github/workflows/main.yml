@@ -1,0 +1,18 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: List repository contents
+        run: ls -la
+      - name: Verify APK archive exists
+        run: |
+          test -f hikam-apk.zip && echo "✅ hikam-apk.zip found" || echo "❌ hikam-apk.zip missing"
