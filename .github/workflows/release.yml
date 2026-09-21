@@ -1,0 +1,45 @@
+name: Release APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract APK from archive
+        run: |
+          sudo apt-get install -y unzip
+          unzip -o hikam-apk.zip
+          echo "=== Extracted files ==="
+          ls -la
+
+      - name: Locate the APK file
+        id: find-apk
+        run: |
+          APK=$(find . -name "*.apk" | head -n 1)
+          if [ -z "$APK" ]; then
+            echo "❌ No APK file found!"
+            exit 1
+          fi
+          echo "✅ Found: $APK"
+          echo "apk_path=$APK" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release with APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.${{ github.run_number }}
+          name: Release v1.${{ github.run_number }}
+          files: ${{ steps.find-apk.outputs.apk_path }}
+          body: |
+            تطبيق حكام - إصدار تلقائي
+            - تاريخ البناء: ${{ github.event.head_commit.timestamp || 'يدوي' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
